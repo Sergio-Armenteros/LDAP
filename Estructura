@@ -1,0 +1,62 @@
+##Crear las UO
+New-ADOrganizationalUnit -Name "Andel" -Path "dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+New-ADOrganizationalUnit -Name "Smir" -Path "ou=Andel,dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+New-ADOrganizationalUnit -Name "Itel" -Path "ou=Andel,dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+New-ADOrganizationalUnit -Name "Asir" -Path "ou=Andel,dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+##Crear los Usuarios
+New-ADUser -Name smir1 -accountpassword (convertto-securestring "andel-1928" -asplaintext -force) -SamAccountName "u192.168.1.1" -Enabled $true -Path "ou=Smir,ou=Andel,dc=Andel,dc=local"
+New-ADUser -Name smir2  -accountpassword (convertto-securestring "andel-1928" -asplaintext -force) -SamAccountName "u192.168.1.2" -Enabled $true -Path "ou=Smir,ou=Andel,dc=Andel,dc=local"
+New-ADUser -Name itel1  -accountpassword (convertto-securestring "andel-1928" -asplaintext -force) -SamAccountName "u192.168.2.1" -Enabled $true -Path "ou=Itel,ou=Andel,dc=Andel,dc=local"
+New-ADUser -Name itel2  -accountpassword (convertto-securestring "andel-1928" -asplaintext -force) -SamAccountName "u192.168.2.2" -Enabled $true -Path "ou=Itel,ou=Andel,dc=Andel,dc=local"
+New-ADUser -Name asir1  -accountpassword (convertto-securestring "andel-1928" -asplaintext -force) -SamAccountName "u192.168.3.1" -Enabled $true -Path "ou=Asir,ou=Andel,dc=Andel,dc=local"
+New-ADUser -Name asir2 -accountpassword (convertto-securestring "andel-1928" -asplaintext -force)  -SamAccountName "u192.168.3.2" -Enabled $true -Path "ou=Asir,ou=Andel,dc=Andel,dc=local"
+##Crear los Grupos
+New-ADGroup -GroupScope global -Name Smir -Path "OU=Smir,OU=Andel,DC=Andel,DC=local"
+New-ADGroup -GroupScope global -Name Itel -Path "OU=Asir,OU=Andel,DC=Andel,DC=local"
+New-ADGroup -GroupScope global -Name Asir -Path "OU=itel,OU=Andel,DC=Andel,DC=local"
+##Mover los Usuarios al grupo
+Add-ADGroupMember -Identity Smir -Members "cn=smir1,OU=Smir,OU=Andel,DC=Andel,DC=local"
+Add-ADGroupMember -Identity Smir -Members "cn=smir2,OU=Smir,OU=Andel,DC=Andel,DC=local"
+Add-ADGroupMember -Identity Itel -Members "cn=itel2,OU=Itel,OU=Andel,DC=Andel,DC=local"
+Add-ADGroupMember -Identity Asir -Members "cn=asir1,OU=Asir,OU=Andel,DC=Andel,DC=local"
+Add-ADGroupMember -Identity Asir -Members "cn=asir2,OU=Asir,OU=Andel,DC=Andel,DC=local"
+## Nueva OU 
+New-ADOrganizationalUnit -Name "backup21" -Path "dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+##Mover los usuario
+Move-ADObject 'cn=smir2,ou=Smir,ou=Andel,dc=Andel,dc=local' -TargetPath ‘ou=backup21,dc=Andel,dc=local’ 
+Remove-ADOrganizationalUnit -Identity ‘ou=backup21,dc=Andel,dc=local’  -Recursive 
+### Funciones ###
+#instalar chorme 
+function Chrome
+{
+New-ScheduledTaskAction -Execute 'C:\instalar\ChromeSetup.exe'
+}
+chrome
+
+##Gestion de la impresora 
+function impresora 
+{
+$1 = (Get-PrintJob "Generic / Text Only" |select username)
+$1.count
+if($1.Count -ge 10){
+echo "el Adminstrador esta imprimiendo demasiado"
+}
+else
+    {
+echo "No hay ningun problema"
+}
+}
+impresora 
+
+##Copias de seguridad
+function copias_seguridad {
+$original  = (Get-FileHash C:\Users\Administrador\Desktop\prueba\alumnos.txt -Algorithm SHA1)
+if ($original.Hash = "2575ACBD57EBBEC9A8DC82BE107CD49C21E260E6")
+{
+echo "el fichero  sido modificado"
+Get-Content C:\Users\Administrador\Desktop\prueba\alumnos.txt | Out-File alumnos-old.txt
+}else {
+echo "El fichero no a sido modificado"
+}
+}
+copias_seguridad
