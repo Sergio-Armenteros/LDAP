@@ -1,0 +1,77 @@
+cd C:\Users\Administrador\Desktop\prueba\
+foreach ($fichero in gc .\1.txt){
+    switch($fichero.split(",")[0])
+    {
+      "oup"{
+            $andel = $fichero.split(",")[1]
+            New-ADOrganizationalUnit -Name $fichero.split(",")[1] -Path "dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+            echo "Creamos andel"
+           }
+       "ou"{
+           New-ADOrganizationalUnit -Name $fichero.split(",")[1] -Path "ou=$andel,dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+           echo "Creamos todos los grados"
+            }
+        "gp"{
+            $ou= $fichero.split(",")[2]
+            $nombre = $fichero.split(",")[1]
+            New-ADGroup -GroupScope global -Name $nombre -Path "OU=$ou,OU=$andel,DC=Andel,DC=local"
+            echo "Creamos todos los grupos de cada grado"
+            }
+        "us"{
+            $usu = $fichero.split(",")[1]
+            $ousus = $fichero.split(",")[2]
+            $directorio = "C:\Users\Public\Andel" + "\" + $usu
+            mkdir $directorio
+            New-ADUser -Name $usu  -SamAccountName $usu -Enabled $true -Path "ou=$ousus,ou=$andel,dc=Andel,dc=local" -accountpassword (convertto-securestring "andel-1928" -asplaintext -force) –HomeDirectory $directorio
+            echo "Creamos todos los usuarios"
+            }
+        "mg"{
+            $grupo = $fichero.split(",")[1]
+            $ougp = $fichero.split(",")[2]
+           foreach ($1 in $fichero.split(",")[3..5])
+                    {
+                    Add-ADGroupMember -Identity $grupo -Members "cn=$1,OU=$ougp,OU=$andel,DC=Andel,DC=local"
+                    }
+             echo "Movemos los usuarios a sus grupos"
+            }
+        "dh"{
+             New-ADOrganizationalUnit -Name "backup21" -Path "dc=Andel,dc=local" -ProtectedFromAccidentalDeletion $false
+             $55 = $fichero.Split(",")[1]
+            foreach ($2 in $fichero.split(",")[2..5])
+                {
+                   Set-ADUser -Identity $2 -Enabled $false
+                   Move-ADObject "cn=$2,ou=$55,ou=Andel,dc=Andel,dc=local" -TargetPath ‘ou=backup21,dc=Andel,dc=local’ 
+                   Remove-ADOrganizationalUnit -Identity ‘ou=backup21,dc=Andel,dc=local’  -Recursive -WhatIf
+                  
+                }       
+            }
+        }
+
+}
+####### Funciones
+$asir1 =  "C:\andel\asir1"
+  $asir1b= "C:\Users\Administrador\Desktop\andel\asir1"
+  function copias_de_seguridad {
+   foreach($fichero in ls $asir1)
+    {
+        foreach($ficheroc in ls $asir1b)
+        {
+            if($fichero.LastWriteTime -gt $ficheroc.LastWriteTime)
+            {
+                "SON DISTINTOS Y EL FICHERO1 ES MÁS NUEVO QUE FICHERO 2", $fichero.LastWriteTime, $ficheroc.LastWriteTime
+                Copy-Item $asir1\$fichero $asir1b
+            
+            }
+            elseif($fichero.LastWriteTime -lt $ficheroc.LastWriteTime)
+            {
+                "SON DISTINTOS Y EL FICHERO2 ES MÁS NUEVO QUE FICHERO 1", $fichero.LastWriteTime, $ficheroc.LastWriteTime
+                Copy-Item $asir1b\$ficheroc $asir1
+            }
+            else
+            {
+               "SON IGUALES", $fichero.LastWriteTime, $ficheroc.LastWriteTime
+            }
+        }
+    }
+}
+copias_de_seguridad
